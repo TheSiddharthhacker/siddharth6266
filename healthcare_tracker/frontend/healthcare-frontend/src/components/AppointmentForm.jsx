@@ -25,23 +25,6 @@ export default function AppointmentForm({ onBooked = () => {} }) {
       console.log("📌 Appointment API Response:", res.data);
 
       if (res.data.success) {
-        const newAppointment = res.data.appointment || res.data.data || res.data;
-
-        // ✅ Pehle parent state update karo
-        onBooked(newAppointment);
-
-        // ✅ Server se latest appointments list bhi fetch karo
-        try {
-          const listRes = await axios.get(
-            `${process.env.REACT_APP_BACKEND_URL}/api/appointments`
-          );
-          if (listRes.data.success) {
-            onBooked(listRes.data.appointments); // full list bhejo
-          }
-        } catch (fetchErr) {
-          console.error("❌ Failed to refresh appointments:", fetchErr);
-        }
-
         toast.success("✅ Appointment booked successfully!");
         setForm({
           patient: "",
@@ -50,6 +33,8 @@ export default function AppointmentForm({ onBooked = () => {} }) {
           medicine: "",
           phone: "",
         });
+
+        onBooked(); // ✅ Parent ko bol do refresh karne
       } else {
         toast.error("❌ Failed to book appointment!");
       }

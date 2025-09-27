@@ -1,11 +1,10 @@
+// backend/routes/appointments.js
 import express from "express";
 import Appointment from "../models/Appointment.js";
-// import twilio from "twilio";
 import dotenv from "dotenv";
 dotenv.config();
 
 const router = express.Router();
-// const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH);
 
 // Book an appointment
 router.post("/book", async (req, res) => {
@@ -13,13 +12,6 @@ router.post("/book", async (req, res) => {
     const { patient, doctor, datetime, medicine, phone } = req.body;
     const appointment = new Appointment({ patient, doctor, datetime, medicine, phone });
     await appointment.save();
-
-    // Send WhatsApp reminder
-    // await client.messages.create({
-    //   body: `Hi ${patient}, your appointment with Dr.${doctor} is on ${datetime}.`,
-    //   from: process.env.TWILIO_PHONE,
-    //   to: `whatsapp:${phone}`
-    // });
 
     res.json({ success: true, appointment });
   } catch (err) {
@@ -30,8 +22,13 @@ router.post("/book", async (req, res) => {
 
 // Get all appointments
 router.get("/", async (req, res) => {
-  const appointments = await Appointment.find();
-  res.json(appointments);
+  try {
+    const appointments = await Appointment.find();
+    res.json({ success: true, appointments });
+  } catch (err) {
+    console.error("Fetch error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 export default router;

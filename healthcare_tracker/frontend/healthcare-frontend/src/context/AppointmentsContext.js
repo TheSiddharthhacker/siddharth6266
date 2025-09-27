@@ -7,7 +7,7 @@ const AppointmentsContext = createContext();
 export const AppointmentsProvider = ({ children }) => {
   const [appointments, setAppointments] = useState([]);
 
-  // 🔹 Fetch all appointments from backend
+  // 🔹 Fetch all appointments
   const fetchAppointments = async () => {
     try {
       const res = await axios.get(
@@ -17,44 +17,40 @@ export const AppointmentsProvider = ({ children }) => {
         setAppointments(res.data.appointments || []);
       }
     } catch (err) {
-      console.error("Failed to fetch appointments:", err);
-      toast.error("❌ Failed to load appointments!");
+      console.error("❌ Fetch error:", err);
     }
   };
 
-  // 🔹 Run once on app load
-  useEffect(() => {
-    fetchAppointments();
-  }, []);
-
-  // 🔹 Book new appointment → refresh list
-  const addAppointment = async (data) => {
+  // 🔹 Book new appointment
+  const addAppointment = async (form) => {
     try {
       const res = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/api/appointments/book`,
-        data
+        form
       );
-
       if (res.data.success) {
-        toast.success("✅ Appointment booked successfully!");
-        fetchAppointments(); // refresh list
+        toast.success("✅ Appointment booked!");
+        await fetchAppointments(); // refresh list immediately
       } else {
         toast.error("❌ Failed to book appointment!");
       }
     } catch (err) {
-      console.error("Booking error:", err);
+      console.error("❌ Booking error:", err);
       toast.error("❌ Something went wrong!");
     }
   };
 
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
+
   return (
     <AppointmentsContext.Provider
-      value={{ appointments, fetchAppointments, addAppointment }}
+      value={{ appointments, addAppointment, fetchAppointments }}
     >
       {children}
     </AppointmentsContext.Provider>
   );
 };
 
-// 🔹 Hook for easy use
 export const useAppointments = () => useContext(AppointmentsContext);

@@ -1,42 +1,11 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { toast } from "react-toastify";
+// src/components/AppointmentList.jsx
+import React from "react";
 
-export default function AppointmentList() {
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function AppointmentList({ appointments }) {
+  console.log("📌 AppointmentList received (raw prop):", appointments);
 
-  // ✅ Fetch appointments on mount
-  useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        const res = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/api/appointments`
-        );
-        console.log("📌 All appointments:", res.data);
-
-        if (res.data.success) {
-          setAppointments(res.data.appointments || []);
-        } else {
-          toast.error("❌ Failed to load appointments!");
-        }
-      } catch (err) {
-        console.error("Failed to fetch appointments:", err);
-        toast.error("❌ Failed to load appointments!");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAppointments();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="bg-white p-6 rounded-2xl shadow-md text-center text-gray-500 font-inter">
-        Loading appointments...
-      </div>
-    );
+  if (!appointments) {
+    return <div>Loading appointments...</div>;
   }
 
   if (appointments.length === 0) {
@@ -47,6 +16,7 @@ export default function AppointmentList() {
     );
   }
 
+
   return (
     <div className="mt-4 bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
       <h2 className="text-2xl font-bold text-green-700 mb-6 font-poppins">
@@ -55,10 +25,16 @@ export default function AppointmentList() {
 
       <div className="space-y-4">
         {appointments.map((a, idx) => {
-          const patient = a.patient || a.patientName || "Unknown";
-          const doctor = a.doctor || a.doctorName || "Not Assigned";
-          const datetime = a.datetime || a.date || a.time || "No Date";
-          const medicine = a.medicine || a.prescription || "No medicine prescribed";
+          const patient = a.patient || "Unknown";
+          const doctor = a.doctor || "Not Assigned";
+
+          // ✅ datetime ko readable format me dikha rahe
+        const datetime = a.datetime && !isNaN(new Date(a.datetime))
+  ? new Date(a.datetime).toLocaleString()
+  : "No Date";
+
+
+          const medicine = a.medicine || "No medicine prescribed";
 
           return (
             <div
